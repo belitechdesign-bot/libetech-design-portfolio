@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react'
+import React, { useEffect, useState } from 'react'
 import { createRoot } from 'react-dom/client'
 import { ArrowDown, ArrowUpRight } from 'lucide-react'
 import './styles.css'
@@ -59,19 +59,46 @@ function SectionTitle({kicker,title,desc}){return <div className="section-title 
 function Manifesto(){return <section className="manifest-light observe"><p>Diseño que se entiende.</p><h2>La imagen correcta hace que una marca se sienta más confiable antes de vender una sola palabra.</h2></section>}
 
 function Logos(){
-  const featured = logos.slice(0, 12)
-  const rest = logos.slice(12)
-  return <section id="logos" className="section logos-section">
-    <SectionTitle kicker="01 / Logos" title="Identidades con carácter, aire y presencia." desc="Una selección más viva: piezas grandes, ritmos distintos y movimiento sutil sin esconder el trabajo."/>
-    <div className="logo-showcase">
-      {featured.map((src,i)=><article className={`logo-feature observe span-${(i%5)+1}`} key={src}>
-        <img src={src}/>
-        <small>{String(i+1).padStart(2,'0')}</small>
-      </article>)}
-    </div>
-    <div className="logo-ribbon observe" aria-label="Más logotipos">
-      <div className="logo-ribbon-track">
-        {[...rest, ...rest].map((src,i)=><div className="ribbon-logo" key={src+i}><img src={src}/></div>)}
+  const [active, setActive] = useState(0)
+  const total = logos.length
+  const prev = () => setActive((active - 1 + total) % total)
+  const next = () => setActive((active + 1) % total)
+  const prevIndex = (active - 1 + total) % total
+  const nextIndex = (active + 1) % total
+
+  useEffect(()=>{
+    const timer = setInterval(()=>setActive(v => (v + 1) % total), 5200)
+    return ()=>clearInterval(timer)
+  },[total])
+
+  return <section id="logos" className="section logos-section logos-carousel-section">
+    <SectionTitle kicker="01 / Logos" title="Identidades presentadas como marcas, no como archivos." desc="Cada logo aparece con su propia presencia: protagonista al centro y su misma silueta desenfocada al fondo."/>
+
+    <div className="premium-logo-carousel observe">
+      <img className="logo-blur-bg" key={`bg-${active}`} src={logos[active]} alt="" aria-hidden="true" />
+
+      <button className="carousel-side side-left" onClick={prev} aria-label="Logo anterior">
+        <img src={logos[prevIndex]} alt="Logo anterior" />
+      </button>
+
+      <article className="carousel-main-logo" key={`logo-${active}`}>
+        <div className="logo-stage-label">
+          <span>{String(active + 1).padStart(2,'0')} / {String(total).padStart(2,'0')}</span>
+          <small>Brand identity</small>
+        </div>
+        <img src={logos[active]} alt={`Logo destacado ${active + 1}`} />
+      </article>
+
+      <button className="carousel-side side-right" onClick={next} aria-label="Siguiente logo">
+        <img src={logos[nextIndex]} alt="Siguiente logo" />
+      </button>
+
+      <div className="carousel-controls">
+        <button onClick={prev}>Anterior</button>
+        <div className="logo-dots" aria-label="Indicadores de logos">
+          {logos.slice(0, 12).map((_,i)=><button key={i} onClick={()=>setActive(i)} className={i===active ? 'active' : ''} aria-label={`Ver logo ${i+1}`}></button>)}
+        </div>
+        <button onClick={next}>Siguiente</button>
       </div>
     </div>
   </section>
